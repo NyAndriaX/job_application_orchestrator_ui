@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
 
-export function useApiRequest() {
+export function useApiRequest<TData = unknown>() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [data, setData] = useState(null)
+  const [data, setData] = useState<TData | null>(null)
 
-  const run = useCallback(async (asyncFn) => {
+  const run = useCallback(async (asyncFn: () => Promise<TData>) => {
     setLoading(true)
     setError('')
     try {
@@ -13,7 +13,8 @@ export function useApiRequest() {
       setData(result)
       return result
     } catch (err) {
-      setError(err.message || 'Request failed.')
+      const message = err instanceof Error ? err.message : 'Request failed.'
+      setError(message)
       setData(null)
       return null
     } finally {

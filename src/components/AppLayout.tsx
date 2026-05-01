@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Avatar, Button, Drawer, Grid, Dropdown, Layout, Menu, Space, Typography } from 'antd'
+import type { MenuProps } from 'antd'
 import {
   BankOutlined,
   CalendarOutlined,
@@ -14,14 +15,16 @@ import { useAuth } from '../context/AuthContext'
 const { Sider, Header, Content } = Layout
 const { Text } = Typography
 
-const NAV_ITEMS = [
+type NavItem = { key: string; icon: React.ReactNode; label: string }
+
+const NAV_ITEMS: NavItem[] = [
   { key: '/dashboard', icon: <RocketOutlined />, label: 'Dashboard' },
   { key: '/jobs', icon: <BankOutlined />, label: 'Applied jobs' },
   { key: '/tasks', icon: <CalendarOutlined />, label: 'Scheduler tasks' },
   { key: '/settings', icon: <SettingOutlined />, label: 'Settings' },
 ]
 
-export default function AppLayout({ children }) {
+export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -30,16 +33,23 @@ export default function AppLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const initials = user?.full_name
-    ? user.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    ? user.full_name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
     : 'U'
 
-  const userMenuItems = [
+  const userMenuItems: MenuProps['items'] = [
     {
       key: 'info',
       label: (
         <Space direction="vertical" size={0} className="py-1">
           <Text strong>{user?.full_name || 'User'}</Text>
-          <Text type="secondary" className="text-xs">{user?.email}</Text>
+          <Text type="secondary" className="text-xs">
+            {user?.email}
+          </Text>
         </Space>
       ),
       disabled: true,
@@ -54,7 +64,7 @@ export default function AppLayout({ children }) {
     },
   ]
 
-  const onMenuNavigate = (key) => {
+  const onMenuNavigate = (key: string) => {
     navigate(key)
     if (isMobile) setMobileOpen(false)
   }
@@ -63,7 +73,7 @@ export default function AppLayout({ children }) {
     <Menu
       mode="inline"
       selectedKeys={[pathname]}
-      items={NAV_ITEMS}
+      items={NAV_ITEMS as MenuProps['items']}
       onClick={({ key }) => onMenuNavigate(key)}
       className="border-none! pt-2"
     />
@@ -79,7 +89,9 @@ export default function AppLayout({ children }) {
         >
           <div className="flex h-14 items-center gap-2 border-b border-slate-100 px-5">
             <RocketOutlined className="text-indigo-600 text-lg" />
-            <Text strong className="text-slate-800 truncate">Job Orchestrator</Text>
+            <Text strong className="text-slate-800 truncate">
+              Job Orchestrator
+            </Text>
           </div>
           {navMenu}
         </Sider>
@@ -98,7 +110,7 @@ export default function AppLayout({ children }) {
               />
             )}
             <Text type="secondary" className="text-sm font-medium">
-              {isMobile ? 'Job Orchestrator' : NAV_ITEMS.find((i) => i.key === pathname)?.label ?? ''}
+              {isMobile ? 'Job Orchestrator' : NAV_ITEMS?.find((i) => i?.key === pathname)?.label ?? ''}
             </Text>
           </Space>
           <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
@@ -111,9 +123,7 @@ export default function AppLayout({ children }) {
           </Dropdown>
         </Header>
 
-        <Content className="bg-slate-50 p-3 sm:p-5 lg:p-6">
-          {children}
-        </Content>
+        <Content className="bg-slate-50 p-3 sm:p-5 lg:p-6">{children}</Content>
       </Layout>
       {isMobile && (
         <Drawer
@@ -127,7 +137,7 @@ export default function AppLayout({ children }) {
           open={mobileOpen}
           onClose={() => setMobileOpen(false)}
           width={260}
-          bodyStyle={{ padding: 0 }}
+          styles={{ body: { padding: 0 } }}
         >
           {navMenu}
         </Drawer>

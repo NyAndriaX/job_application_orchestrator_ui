@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { ConfigProvider } from 'antd'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
@@ -8,14 +9,14 @@ import JobsPage from './pages/JobsPage'
 import TasksPage from './pages/TasksPage'
 import SettingsPage from './pages/SettingsPage'
 
-function PrivateRoute({ children }) {
+function PrivateRoute({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  return user ? children : <Navigate to="/auth" replace />
+  return user ? <>{children}</> : <Navigate to="/auth" replace />
 }
 
-function AuthRoute({ children }) {
+function AuthRoute({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  return user ? <Navigate to="/dashboard" replace /> : children
+  return user ? <Navigate to="/dashboard" replace /> : <>{children}</>
 }
 
 export default function App() {

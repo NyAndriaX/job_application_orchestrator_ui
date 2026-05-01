@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Button, Card, Col, Row, Skeleton, Space, Statistic, Table, Tag, Timeline, Typography } from 'antd'
 import {
   BankOutlined,
@@ -12,16 +12,34 @@ import { useNavigate } from 'react-router-dom'
 import { orchestratorApi } from '../api/orchestratorApi'
 import { useAuth } from '../context/AuthContext'
 import { useApiRequest } from '../hooks/useApiRequest'
+import type { JobRecord, SchedulerTask } from '../types'
 
 const { Title, Text } = Typography
 
-function StatCard({ icon, label, value, color, loading }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  color,
+  loading,
+}: {
+  icon: ReactNode
+  label: string
+  value: number
+  color: string
+  loading: boolean
+}) {
   return (
     <Card className="shadow-xs h-full">
       <Skeleton loading={loading} active paragraph={false}>
         <Statistic
-          title={<Space>{icon}<span>{label}</span></Space>}
-          value={value ?? 0}
+          title={
+            <Space>
+              {icon}
+              <span>{label}</span>
+            </Space>
+          }
+          value={value}
           valueStyle={{ color, fontSize: 28, fontWeight: 700 }}
         />
       </Skeleton>
@@ -29,7 +47,7 @@ function StatCard({ icon, label, value, color, loading }) {
   )
 }
 
-const STATUS_COLORS = {
+const STATUS_COLORS: Record<string, string> = {
   applied: 'green',
   skipped: 'gold',
   failed: 'red',
@@ -40,27 +58,30 @@ const STATUS_COLORS = {
 export default function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const jobsReq = useApiRequest()
-  const tasksReq = useApiRequest()
+  const jobsReq = useApiRequest<{ jobs?: JobRecord[] }>()
+  const tasksReq = useApiRequest<{ tasks?: SchedulerTask[] }>()
+  const { run: runJobs } = jobsReq
+  const { run: runTasks } = tasksReq
 
   useEffect(() => {
-    jobsReq.run(() => orchestratorApi.listJobs({ userId: user.user_id, limit: 5 }))
-    tasksReq.run(() => orchestratorApi.listSchedulerTasks({ limit: 5 }))
-  }, [user.user_id])
+    if (!user?.user_id) return
+    runJobs(() => orchestratorApi.listJobs({ userId: user.user_id, limit: 5 }))
+    runTasks(() => orchestratorApi.listSchedulerTasks({ limit: 5 }))
+  }, [user?.user_id, runJobs, runTasks])
 
   const jobs = jobsReq.data?.jobs ?? []
   const tasks = tasksReq.data?.tasks ?? []
 
   const totalApplied = jobs.filter((j) => j.status === 'applied').length
   const totalSkipped = jobs.filter((j) => j.status === 'skipped').length
-  const totalFailed = jobs.filter((j) => ['failed', 'error'].includes(j.status)).length
+  const totalFailed = jobs.filter((j) => ['failed', 'error'].includes(j.status ?? '')).length
 
   const recentJobColumns = [
     {
       title: 'Job title',
       dataIndex: 'job_title',
       key: 'job_title',
-      render: (v, row) =>
+      render: (v: string | undefined, row: JobRecord) =>
         row.job_url ? (
           <a href={row.job_url} target="_blank" rel="noreferrer" className="font-medium">
             {v || '—'}
@@ -69,31 +90,33 @@ export default function DashboardPage() {
           <span className="font-medium">{v || '—'}</span>
         ),
     },
-    { title: 'Company', dataIndex: 'job_company', key: 'job_company', render: (v) => v || '—' },
+    { title: 'Company', dataIndex: 'job_company', key: 'job_company', render: (v: string | undefined) => v || '—' },
     {
       title: 'Platform',
       dataIndex: 'platform',
       key: 'platform',
-      render: (v) => <Tag>{v}</Tag>,
+      render: (v: string | undefined) => <Tag>{v}</Tag>,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (v) => <Tag color={STATUS_COLORS[v] ?? 'default'}>{v}</Tag>,
+      render: (v: string | undefined) => <Tag color={STATUS_COLORS[v ?? 'unknown'] ?? 'default'}>{v}</Tag>,
     },
     {
       title: 'Applied at',
       dataIndex: 'applied_at',
       key: 'applied_at',
-      render: (v) => (v ? new Date(v).toLocaleString() : '—'),
+      render: (v: string | undefined) => (v ? new Date(v).toLocaleString() : '—'),
     },
   ]
 
   return (
     <Space direction="vertical" size="large" className="w-full">
       <div>
-        <Title level={4} className="mb-1!">Dashboard</Title>
+        <Title level={4} className="mb-1!">
+          Dashboard
+        </Title>
         <Text type="secondary">Overview of your job application activity.</Text>
       </div>
 
@@ -137,10 +160,14 @@ export default function DashboardPage() {
                 <span>Recent applied jobs</span>
               </Space>
             }
-            extra={<Button type="link" className="px-0!" onClick={() => navigate('/jobs')}>See all</Button>}
+            extra={
+              <Button type="link" className="px-0!" onClick={() => navigate('/jobs')}>
+                See all
+              </Button>
+            }
           >
             <Table
-              rowKey="job_url"
+              rowKey={(r: JobRecord) => r.job_url ?? `${r.platform}-${r.job_title}`}
               dataSource={jobs}
               columns={recentJobColumns}
               pagination={false}
@@ -161,7 +188,11 @@ export default function DashboardPage() {
                 <span>Recent scheduler runs</span>
               </Space>
             }
-            extra={<Button type="link" className="px-0!" onClick={() => navigate('/tasks')}>See all</Button>}
+            extra={
+              <Button type="link" className="px-0!" onClick={() => navigate('/tasks')}>
+                See all
+              </Button>
+            }
           >
             {tasksReq.loading ? (
               <Skeleton active />
@@ -186,8 +217,12 @@ export default function DashboardPage() {
                         {t.started_at ? new Date(t.started_at).toLocaleString() : '—'}
                       </Text>
                       <Space size={4} className="mt-1" wrap>
-                        <Tag color="green" className="text-xs">{t.summary?.applied_count ?? 0} applied</Tag>
-                        <Tag color="default" className="text-xs">{t.summary?.executions ?? 0} runs</Tag>
+                        <Tag color="green" className="text-xs">
+                          {t.summary?.applied_count ?? 0} applied
+                        </Tag>
+                        <Tag color="default" className="text-xs">
+                          {t.summary?.executions ?? 0} runs
+                        </Tag>
                       </Space>
                     </Space>
                   ),

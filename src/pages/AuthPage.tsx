@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { orchestratorApi } from '../api/orchestratorApi'
 import { useAuth } from '../context/AuthContext'
 import { useApiRequest } from '../hooks/useApiRequest'
+import type { AuthResponse, User } from '../types'
 
 const { Title, Text } = Typography
 
-function LoginForm({ onSuccess }) {
-  const { loading, error, run } = useApiRequest()
+function LoginForm({ onSuccess }: { onSuccess: (userData: User) => void }) {
+  const { loading, error, run } = useApiRequest<AuthResponse>()
 
-  const onFinish = async (values) => {
+  const onFinish = async (values: Record<string, unknown>) => {
     const result = await run(() => orchestratorApi.login(values))
     if (result?.user) onSuccess(result.user)
   }
@@ -45,7 +46,7 @@ export default function AuthPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
 
-  const handleSuccess = (userData) => {
+  const handleSuccess = (userData: User) => {
     signIn(userData)
     navigate('/dashboard')
   }
@@ -55,14 +56,19 @@ export default function AuthPage() {
       <div className="hidden flex-col justify-between bg-indigo-600 p-10 text-white lg:flex lg:w-2/5 xl:p-12">
         <Space>
           <RocketOutlined className="text-2xl" />
-          <Text strong className="text-lg text-white!">Job Orchestrator</Text>
+          <Text strong className="text-lg text-white!">
+            Job Orchestrator
+          </Text>
         </Space>
         <Space direction="vertical" size="large">
           <Title level={2} className="text-white! leading-tight">
-            Automate your<br />job applications.
+            Automate your
+            <br />
+            job applications.
           </Title>
           <Text className="text-indigo-200 text-base">
-            Connect your platforms, set your filters, and let the orchestrator apply for you — daily, automatically.
+            Connect your platforms, set your filters, and let the orchestrator apply for you - daily,
+            automatically.
           </Text>
         </Space>
         <Text className="text-indigo-300 text-sm">© 2026 Job Application Orchestrator</Text>
@@ -73,9 +79,13 @@ export default function AuthPage() {
           <Space direction="vertical" size={6} className="mb-5 sm:mb-8 w-full">
             <div className="flex items-center gap-2 lg:hidden">
               <RocketOutlined className="text-indigo-600 text-xl" />
-              <Text strong className="text-base">Job Orchestrator</Text>
+              <Text strong className="text-base">
+                Job Orchestrator
+              </Text>
             </div>
-            <Title level={2} className="mb-0!">Welcome</Title>
+            <Title level={2} className="mb-0!">
+              Welcome
+            </Title>
             <Text type="secondary">Sign in to access your private dashboard.</Text>
           </Space>
 

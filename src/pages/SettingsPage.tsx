@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Alert, Button, Card, Col, Form, Input, Row, Select, Space, Typography } from 'antd'
 import { LockOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons'
 import { orchestratorApi } from '../api/orchestratorApi'
@@ -7,26 +7,33 @@ import { useApiRequest } from '../hooks/useApiRequest'
 
 const { Title, Text } = Typography
 
-function normalizeArrayInput(value) {
+function normalizeArrayInput(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return value.map((item) => String(item).trim()).filter(Boolean)
 }
 
-function SectionTitle({ children, description }) {
+function SectionTitle({ children, description }: { children: ReactNode; description?: string }) {
   return (
     <div className="mb-4">
-      <Title level={5} className="mb-0!">{children}</Title>
-      {description && <Text type="secondary" className="text-sm">{description}</Text>}
+      <Title level={5} className="mb-0!">
+        {children}
+      </Title>
+      {description && (
+        <Text type="secondary" className="text-sm">
+          {description}
+        </Text>
+      )}
     </div>
   )
 }
 
 function ProfileSection() {
   const { user } = useAuth()
-  const { loading, error, data, run, reset } = useApiRequest()
+  const { loading, error, data, run, reset } = useApiRequest<{ message?: string; profile?: Record<string, unknown> }>()
   const [form] = Form.useForm()
 
   useEffect(() => {
+    if (!user?.user_id) return
     run(() => orchestratorApi.getUserProfile({ userId: user.user_id })).then((result) => {
       if (!result?.profile) return
       const profile = result.profile
@@ -40,9 +47,10 @@ function ProfileSection() {
         max_jobs: Number.isFinite(Number(profile.max_jobs)) ? Number(profile.max_jobs) : 20,
       })
     })
-  }, [form, run, user.user_id])
+  }, [form, run, user?.user_id])
 
-  const onFinish = (values) => {
+  const onFinish = (values: Record<string, unknown>) => {
+    if (!user?.user_id) return
     reset()
     run(() =>
       orchestratorApi.saveUserProfile({
@@ -58,9 +66,7 @@ function ProfileSection() {
 
   return (
     <Card className="shadow-xs">
-      <SectionTitle
-        description="Set the search filters and preferences used by the orchestrator when applying to jobs."
-      >
+      <SectionTitle description="Set the search filters and preferences used by the orchestrator when applying to jobs.">
         Search preferences
       </SectionTitle>
 
@@ -68,7 +74,13 @@ function ProfileSection() {
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        initialValues={{ filters: ['cdi', 'stage'], skills: [], excluded_keywords: [], min_relevance_score: 1, max_jobs: 20 }}
+        initialValues={{
+          filters: ['cdi', 'stage'],
+          skills: [],
+          excluded_keywords: [],
+          min_relevance_score: 1,
+          max_jobs: 20,
+        }}
       >
         <Row gutter={[16, 0]}>
           <Col xs={24} md={12}>
@@ -91,30 +103,14 @@ function ProfileSection() {
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
-            <Form.Item
-              label="Skills"
-              name="skills"
-              tooltip="Array of skills used for relevance matching."
-            >
-              <Select
-                mode="tags"
-                tokenSeparators={[',']}
-                placeholder="Add skills (e.g. python, react, docker)"
-              />
+            <Form.Item label="Skills" name="skills" tooltip="Array of skills used for relevance matching.">
+              <Select mode="tags" tokenSeparators={[',']} placeholder="Add skills (e.g. python, react, docker)" />
             </Form.Item>
           </Col>
         </Row>
 
-        <Form.Item
-          label="Excluded keywords"
-          name="excluded_keywords"
-          tooltip="Array of keywords to exclude."
-        >
-          <Select
-            mode="tags"
-            tokenSeparators={[',']}
-            placeholder="Add excluded keywords (e.g. senior, lead)"
-          />
+        <Form.Item label="Excluded keywords" name="excluded_keywords" tooltip="Array of keywords to exclude.">
+          <Select mode="tags" tokenSeparators={[',']} placeholder="Add excluded keywords (e.g. senior, lead)" />
         </Form.Item>
 
         <Row gutter={[16, 0]}>
@@ -133,7 +129,13 @@ function ProfileSection() {
         {error && <Alert type="error" showIcon message={error} className="mb-3" />}
         {data?.message && <Alert type="success" showIcon message={data.message} className="mb-3" />}
 
-        <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />} className="w-full sm:w-auto">
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          icon={<SaveOutlined />}
+          className="w-full sm:w-auto"
+        >
           Save preferences
         </Button>
       </Form>
@@ -143,20 +145,22 @@ function ProfileSection() {
 
 function PlatformSection() {
   const { user } = useAuth()
-  const { loading, error, data, run, reset } = useApiRequest()
+  const { loading, error, data, run, reset } = useApiRequest<{ message?: string; config?: Record<string, unknown> }>()
   const [form] = Form.useForm()
 
   useEffect(() => {
+    if (!user?.user_id) return
     run(() => orchestratorApi.getPlatformConfig({ userId: user.user_id, platform: 'asako' })).then((result) => {
-      const auth = result?.config?.auth || {}
+      const auth = (result?.config?.auth ?? {}) as { email?: string }
       form.setFieldsValue({
         platform: 'asako',
         email: typeof auth.email === 'string' ? auth.email : undefined,
       })
     })
-  }, [form, run, user.user_id])
+  }, [form, run, user?.user_id])
 
-  const onFinish = (values) => {
+  const onFinish = (values: Record<string, string>) => {
+    if (!user?.user_id) return
     reset()
     run(() =>
       orchestratorApi.savePlatformConfig({
@@ -169,9 +173,7 @@ function PlatformSection() {
 
   return (
     <Card className="shadow-xs">
-      <SectionTitle
-        description="Store the credentials the orchestrator will use to log in to each platform on your behalf."
-      >
+      <SectionTitle description="Store the credentials the orchestrator will use to log in to each platform on your behalf.">
         Platform credentials
       </SectionTitle>
 
@@ -187,11 +189,7 @@ function PlatformSection() {
 
         <Row gutter={[16, 0]}>
           <Col xs={24} md={12}>
-            <Form.Item
-              label="Platform email"
-              name="email"
-              rules={[{ required: true, type: 'email' }]}
-            >
+            <Form.Item label="Platform email" name="email" rules={[{ required: true, type: 'email' }]}>
               <Input prefix={<UserOutlined />} />
             </Form.Item>
           </Col>
@@ -205,7 +203,13 @@ function PlatformSection() {
         {error && <Alert type="error" showIcon message={error} className="mb-3" />}
         {data?.message && <Alert type="success" showIcon message={data.message} className="mb-3" />}
 
-        <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />} className="w-full sm:w-auto">
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          icon={<SaveOutlined />}
+          className="w-full sm:w-auto"
+        >
           Save credentials
         </Button>
       </Form>
@@ -245,7 +249,9 @@ export default function SettingsPage() {
   return (
     <Space direction="vertical" size="large" className="w-full">
       <div>
-        <Title level={4} className="mb-1!">Settings</Title>
+        <Title level={4} className="mb-1!">
+          Settings
+        </Title>
         <Text type="secondary">Manage your profile preferences and platform credentials.</Text>
       </div>
       <AccountSection />

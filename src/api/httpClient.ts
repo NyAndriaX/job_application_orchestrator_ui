@@ -1,3 +1,5 @@
+import { getStoredToken } from '../auth/authStorage'
+
 const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 if (!rawApiBaseUrl || !rawApiBaseUrl.trim()) {
@@ -11,9 +13,11 @@ const API_BASE_URL = rawApiBaseUrl.trim().replace(/\/$/, '')
 type RequestOptions = RequestInit
 
 async function request<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
+  const token = getStoredToken()
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
     ...options,

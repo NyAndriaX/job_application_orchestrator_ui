@@ -8,12 +8,19 @@ import type { AuthResponse, User } from '../types'
 
 const { Title, Text } = Typography
 
-function LoginForm({ onSuccess }: { onSuccess: (userData: User) => void }) {
+function extractAuthToken(response: AuthResponse): string | null {
+  return response.token || response.access_token || response.jwt_token || null
+}
+
+function LoginForm({ onSuccess }: { onSuccess: (userData: User, token: string) => void }) {
   const { loading, error, run } = useApiRequest<AuthResponse>()
 
   const onFinish = async (values: Record<string, unknown>) => {
     const result = await run(() => orchestratorApi.login(values))
-    if (result?.user) onSuccess(result.user)
+    if (!result?.user) return
+    const token = extractAuthToken(result)
+    if (!token) throw new Error('Login succeeded but no token was returned by the API.')
+    onSuccess(result.user, token)
   }
 
   return (
@@ -46,8 +53,8 @@ export default function AuthPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
 
-  const handleSuccess = (userData: User) => {
-    signIn(userData)
+  const handleSuccess = (userData: User, token: string) => {
+    signIn(userData, token)
     navigate('/dashboard')
   }
 

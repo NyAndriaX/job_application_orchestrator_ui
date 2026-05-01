@@ -155,7 +155,7 @@ export default function TasksPage() {
   const tasks = data?.tasks ?? []
 
   return (
-    <Space direction="vertical" size="large" className="w-full">
+    <Space orientation="vertical" size="large" className="w-full">
       <div>
         <Title level={4} className="mb-1!">
           Scheduler tasks

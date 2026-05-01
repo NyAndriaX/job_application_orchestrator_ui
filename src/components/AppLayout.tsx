@@ -45,7 +45,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     {
       key: 'info',
       label: (
-        <Space direction="vertical" size={0} className="py-1">
+        <Space orientation="vertical" size={0} className="py-1">
           <Text strong>{user?.full_name || 'User'}</Text>
           <Text type="secondary" className="text-xs">
             {user?.email}

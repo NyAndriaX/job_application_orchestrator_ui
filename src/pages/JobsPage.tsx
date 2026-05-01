@@ -111,7 +111,7 @@ export default function JobsPage() {
   })
 
   return (
-    <Space direction="vertical" size="large" className="w-full">
+    <Space orientation="vertical" size="large" className="w-full">
       <div>
         <Title level={4} className="mb-1!">
           Applied jobs

@@ -112,7 +112,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <Space direction="vertical" size="large" className="w-full">
+    <Space orientation="vertical" size="large" className="w-full">
       <div>
         <Title level={4} className="mb-1!">
           Dashboard
@@ -209,7 +209,7 @@ export default function DashboardPage() {
                       <RocketOutlined />
                     ) : undefined,
                   children: (
-                    <Space direction="vertical" size={0}>
+                    <Space orientation="vertical" size={0}>
                       <Text strong className="text-sm">
                         {t.trigger === 'manual_run_now' ? 'Manual run' : 'Scheduled run'}
                       </Text>

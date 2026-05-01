@@ -18,7 +18,7 @@ function LoginForm({ onSuccess }: { onSuccess: (userData: User) => void }) {
 
   return (
     <Form layout="vertical" onFinish={onFinish} size="large" className="w-full">
-      {error && <Alert type="error" showIcon message={error} className="mb-4" />}
+      {error && <Alert type="error" showIcon title={error} className="mb-4" />}
       <Form.Item name="email" rules={[{ required: true, type: 'email', message: 'Valid email required' }]}>
         <Input
           size="large"
@@ -60,7 +60,7 @@ export default function AuthPage() {
             Job Orchestrator
           </Text>
         </Space>
-        <Space direction="vertical" size="large">
+        <Space orientation="vertical" size="large">
           <Title level={2} className="text-white! leading-tight">
             Automate your
             <br />
@@ -76,7 +76,7 @@ export default function AuthPage() {
 
       <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md sm:max-w-xl lg:max-w-lg">
-          <Space direction="vertical" size={6} className="mb-5 sm:mb-8 w-full">
+          <Space orientation="vertical" size={6} className="mb-5 sm:mb-8 w-full">
             <div className="flex items-center gap-2 lg:hidden">
               <RocketOutlined className="text-indigo-600 text-xl" />
               <Text strong className="text-base">

@@ -126,8 +126,8 @@ function ProfileSection() {
           </Col>
         </Row>
 
-        {error && <Alert type="error" showIcon message={error} className="mb-3" />}
-        {data?.message && <Alert type="success" showIcon message={data.message} className="mb-3" />}
+        {error && <Alert type="error" showIcon title={error} className="mb-3" />}
+        {data?.message && <Alert type="success" showIcon title={data.message} className="mb-3" />}
 
         <Button
           type="primary"
@@ -200,8 +200,8 @@ function PlatformSection() {
           </Col>
         </Row>
 
-        {error && <Alert type="error" showIcon message={error} className="mb-3" />}
-        {data?.message && <Alert type="success" showIcon message={data.message} className="mb-3" />}
+        {error && <Alert type="error" showIcon title={error} className="mb-3" />}
+        {data?.message && <Alert type="success" showIcon title={data.message} className="mb-3" />}
 
         <Button
           type="primary"
@@ -225,7 +225,7 @@ function AccountSection() {
       <SectionTitle description="Your account information. Email and name are set at registration.">
         Account information
       </SectionTitle>
-      <Space direction="vertical" size="middle" className="w-full">
+      <Space orientation="vertical" size="middle" className="w-full">
         {[
           { label: 'User ID', value: user?.user_id },
           { label: 'Full name', value: user?.full_name },
@@ -247,7 +247,7 @@ function AccountSection() {
 
 export default function SettingsPage() {
   return (
-    <Space direction="vertical" size="large" className="w-full">
+    <Space orientation="vertical" size="large" className="w-full">
       <div>
         <Title level={4} className="mb-1!">
           Settings

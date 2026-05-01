@@ -4,7 +4,7 @@ const AUTH_STORAGE_KEY = 'jao_auth'
 
 export interface StoredAuthSession {
   user: User
-  token: string
+  token?: string | null
 }
 
 function canUseStorage() {

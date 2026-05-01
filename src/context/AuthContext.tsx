@@ -5,7 +5,7 @@ import { clearStoredSession, loadStoredSession, saveStoredSession } from '../aut
 interface AuthContextValue {
   user: User | null
   token: string | null
-  signIn: (userData: User, token: string) => void
+  signIn: (userData: User, token?: string | null) => void
   signOut: () => void
 }
 
@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user = session?.user ?? null
   const token = session?.token ?? null
 
-  const signIn = useCallback((userData: User, nextToken: string) => {
+  const signIn = useCallback((userData: User, nextToken?: string | null) => {
     const nextSession = { user: userData, token: nextToken }
     saveStoredSession(nextSession)
     setSession(nextSession)

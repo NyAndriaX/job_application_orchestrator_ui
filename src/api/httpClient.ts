@@ -15,6 +15,7 @@ type RequestOptions = RequestInit
 async function request<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
   const token = getStoredToken()
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

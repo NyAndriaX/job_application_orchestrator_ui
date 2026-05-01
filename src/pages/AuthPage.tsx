@@ -12,14 +12,13 @@ function extractAuthToken(response: AuthResponse): string | null {
   return response.token || response.access_token || response.jwt_token || null
 }
 
-function LoginForm({ onSuccess }: { onSuccess: (userData: User, token: string) => void }) {
+function LoginForm({ onSuccess }: { onSuccess: (userData: User, token: string | null) => void }) {
   const { loading, error, run } = useApiRequest<AuthResponse>()
 
   const onFinish = async (values: Record<string, unknown>) => {
     const result = await run(() => orchestratorApi.login(values))
     if (!result?.user) return
     const token = extractAuthToken(result)
-    if (!token) throw new Error('Login succeeded but no token was returned by the API.')
     onSuccess(result.user, token)
   }
 
@@ -53,7 +52,7 @@ export default function AuthPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
 
-  const handleSuccess = (userData: User, token: string) => {
+  const handleSuccess = (userData: User, token: string | null) => {
     signIn(userData, token)
     navigate('/dashboard')
   }

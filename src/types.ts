@@ -51,3 +51,14 @@ export interface SchedulerTask {
   }
   executions?: SchedulerExecution[]
 }
+
+export interface SchedulerStatus {
+  success?: boolean
+  scheduler_enabled?: boolean
+  timezone?: string
+  target_times?: string[]
+  next_slot_local?: string
+  next_run_at_local_iso?: string
+  next_run_at_utc?: string
+  seconds_until_next?: number
+}

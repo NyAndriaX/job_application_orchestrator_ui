@@ -1,5 +1,5 @@
 import { httpClient } from './httpClient'
-import type { AuthResponse, JobRecord, SchedulerTask } from '../types'
+import type { AuthResponse, JobRecord, SchedulerStatus, SchedulerTask } from '../types'
 
 type ApiMessage = { message?: string; [key: string]: unknown }
 
@@ -75,6 +75,17 @@ export const orchestratorApi = {
     const params = new URLSearchParams()
     if (limit) params.set('limit', String(limit))
     return httpClient.get<SchedulerTasksResponse>(`/scheduler/tasks?${params}`)
+  },
+
+  getSchedulerStatus() {
+    return httpClient.get<SchedulerStatus>('/scheduler/status')
+  },
+
+  runSchedulerNow() {
+    return httpClient.post<{
+      success?: boolean
+      summary?: Record<string, unknown>
+    }>('/scheduler/run-now')
   },
 
   orchestrate(payload: Record<string, unknown>) {
